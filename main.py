@@ -19,6 +19,8 @@ def welcomeScreen():
                     user_id = user[0]
                     print("Logged In")
                     Project.projectScreen(user_id)
+                else:
+                    print("user is not exists.")
 
 
 welcomeScreen()

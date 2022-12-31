@@ -8,7 +8,11 @@ class Project:
         os.system('clear')
 
         while True:
+            print("************ Project Screen ************")
             print("1-Create Project")
+            print("2-View All Projects")
+            print("3-Edit Project")
+            print("4-Search For Project By Date")
             try:
                 userInput = int(input("Please Choose From List Above: "))
             except Exception as e:
@@ -16,11 +20,141 @@ class Project:
             else:
                 if userInput == 1:
                     if cls.createProject(user_id):
-                        print(f"Project [{title}] is created successfully.")
+                        print(f"Project is created successfully.")
+                if userInput == 2:
+                    cls.listProjects(user_id)
+                if userInput == 3:
+                    cls.editProject(user_id)
+                if userInput == 4:
+                    pass
+
+    @classmethod
+    def editProject(cls,user_id):
+        os.system('clear')
+        try:
+            conn = sqlite3.connect('crowd_funding.db')
+        except Exception as ex:
+            print(ex)
+        else:
+
+            while True:
+                project_id = input("Please Enter Project ID: ")
+                project = cls.isProjectExisted(user_id,project_id)
+                if project_id.isnumeric() and project:
+                    break
+                else:
+                    print("Project ID Format is incorrect or Project is not existed")
+
+            title = project[2]
+            details = project[3]
+            total_target = project[4]
+            start_date = project[5]
+            end_date = project[6]
+            os.system('clear')
+            print(f"------ Project [{title}] ------")
+            while True:
+                print("1-Edit Title")
+                print("2-Edit Details")
+                print("3-Edit Total Target")
+                print("4-Edit Start Date")
+                print("5-Edit End Date")
+                userInput = int(input("Please Choose From List Above: "))
+
+                if userInput == 1:
+                    while True:
+                        title = input("Please Enter Project Title: ")
+                        if bool(re.fullmatch("^[a-zA-Z]+[a-zA-Z0-9]*$", title)):
+                            break
+                        else:
+                            print("Project Title Format is incorrect")
+
+                if userInput == 2:
+                    while True:
+                        details = input("Please Enter Project Details: ")
+                        if bool(re.fullmatch("^[a-zA-Z]+[a-zA-Z0-9]*$", details)):
+                            break
+                        else:
+                            print("Project Details Format is incorrect")
+
+                if userInput == 3:
+                    while True:
+                        total_target = input("Please Enter Project Total Target: ")
+                        if total_target.isnumeric():
+                            break
+                        else:
+                            print("Project Total Target Format is incorrect")
+
+                if userInput == 4:
+                    while True:
+                        start_date = input("Please Enter Project Start Date: ")
+                        if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$",
+                                         start_date)):
+                            break
+                        else:
+                            print("Project Start Format is incorrect")
+
+                if userInput == 5:
+                    while True:
+                        end_date = input("Please Enter Project End Date: ")
+                        if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$",
+                                         end_date)):
+                            break
+                        else:
+                            print("Project End Format is incorrect")
+
+                cur = conn.cursor()
+                cur.execute('''UPDATE projects set title = ? , details = ? , total_target = ? , start_date = ? , end_date = ? where id = ?''' , (title,details,total_target,start_date,end_date,project_id))
+                conn.commit()
+                conn.close()
+                break
+    @classmethod
+    def isProjectExisted(cls,user_id,project_id):
+        try:
+            conn = sqlite3.connect('crowd_funding.db')
+        except Exception as ex:
+            print(ex)
+        else:
+            cur = conn.cursor()
+            cur.execute(f"SELECT * from projects where id = '{project_id}' and user_id = {user_id}")
+            project = cur.fetchone()
+            conn.close()
+            if project:
+                return project
+            return False
+
+
+    @classmethod
+    def listProjects(cls,user_id):
+        os.system('clear')
+        try:
+            conn = sqlite3.connect('crowd_funding.db')
+        except Exception as ex:
+            print(ex)
+        else:
+            cur = conn.cursor()
+            cur.execute(f"SELECT * from projects where user_id = '{user_id}'")
+            projects = cur.fetchall()
+            for project in projects:
+                id = project[0]
+                title = project[2]
+                details = project[3]
+                total_target = project[4]
+                start_date = project[5]
+                end_date = project[6]
+                print(f"ID : {id}")
+                print(f"Title : {title}")
+                print(f"Details : {details}")
+                print(f"Total Target : {total_target}")
+                print(f"Start Date : {start_date}")
+                print(f"End Date : {end_date}")
+                print("-----------------------------------------")
+            conn.close()
+
 
 
     @classmethod
     def createProject(cls , user_id):
+        os.system('clear')
         try:
             conn = sqlite3.connect('crowd_funding.db')
         except Exception as ex:
@@ -41,22 +175,23 @@ class Project:
                     print("Project Details Format is incorrect")
 
             while True:
-                total_target = input("Please Enter Project Details: ")
+                total_target = input("Please Enter Project Total Target: ")
                 if total_target.isnumeric():
                     break
                 else:
                     print("Project Total Target Format is incorrect")
 
             while True:
+                # dd-mm-yyyy
                 start_date = input("Please Enter Project Start Date: ")
-                if bool(re.fullmatch("^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$" , start_date)):
+                if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$" , start_date)):
                     break
                 else:
                     print("Project Start Format is incorrect")
 
             while True:
                 end_date = input("Please Enter Project End Date: ")
-                if bool(re.fullmatch("^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$" , end_date)):
+                if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$" , end_date)):
                     break
                 else:
                     print("Project End Format is incorrect")
