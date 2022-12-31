@@ -12,7 +12,8 @@ class Project:
             print("1-Create Project")
             print("2-View All Projects")
             print("3-Edit Project")
-            print("4-Search For Project By Date")
+            print("4-Delete Project")
+            print("5-Search For Project By Date")
             try:
                 userInput = int(input("Please Choose From List Above: "))
             except Exception as e:
@@ -26,6 +27,8 @@ class Project:
                 if userInput == 3:
                     cls.editProject(user_id)
                 if userInput == 4:
+                    cls.deleteProject(user_id)
+                if userInput == 5:
                     cls.searchForProjectByDate(user_id)
 
     @classmethod
@@ -157,6 +160,29 @@ class Project:
                 conn.commit()
                 conn.close()
                 break
+
+    @classmethod
+    def deleteProject(cls,user_id):
+        os.system('clear')
+        try:
+            conn = sqlite3.connect('crowd_funding.db')
+        except Exception as ex:
+            print(ex)
+        else:
+            while True:
+                project_id = input("Please Enter Project ID To Delete: ")
+                project = cls.isProjectExisted(user_id,project_id)
+                if project_id.isnumeric() and project:
+                    break
+                else:
+                    print("Project ID Format is incorrect or Project is not existed")
+            cur = conn.cursor()
+            cur.execute(
+                f'''DELETE FROM projects where id = ? and user_id = ?''',
+                (project_id, user_id ))
+            conn.commit()
+            conn.close()
+            print(f"Project ID [{project_id}] is deleted.")
 
     @classmethod
     def searchForProjectByDate(cls,user_id):
