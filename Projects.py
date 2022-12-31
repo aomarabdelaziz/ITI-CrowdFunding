@@ -26,7 +26,57 @@ class Project:
                 if userInput == 3:
                     cls.editProject(user_id)
                 if userInput == 4:
-                    pass
+                    cls.searchForProjectByDate(user_id)
+
+    @classmethod
+    def createProject(cls , user_id):
+        os.system('clear')
+        try:
+            conn = sqlite3.connect('crowd_funding.db')
+        except Exception as ex:
+            print(ex)
+        else:
+            while True:
+                title = input("Please Enter Project Title: ")
+                if bool(re.fullmatch("^[a-zA-Z]+[a-zA-Z0-9]*$", title)):
+                    break
+                else:
+                    print("Project Title Format is incorrect")
+
+            while True:
+                details = input("Please Enter Project Details: ")
+                if bool(re.fullmatch("^[a-zA-Z]+[a-zA-Z0-9]*$", details)):
+                    break
+                else:
+                    print("Project Details Format is incorrect")
+
+            while True:
+                total_target = input("Please Enter Project Total Target: ")
+                if total_target.isnumeric():
+                    break
+                else:
+                    print("Project Total Target Format is incorrect")
+
+            while True:
+                # dd-mm-yyyy
+                start_date = input("Please Enter Project Start Date: ")
+                if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$" , start_date)):
+                    break
+                else:
+                    print("Project Start Format is incorrect")
+
+            while True:
+                end_date = input("Please Enter Project End Date: ")
+                if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$" , end_date)):
+                    break
+                else:
+                    print("Project End Format is incorrect")
+
+            conn.execute(f"INSERT INTO projects (user_id,title,details,total_target,start_date,end_date) \
+                    VALUES ({user_id}, '{title}' , '{details}', {total_target} , '{start_date}' , '{end_date}')")
+            conn.commit()
+            conn.close()
+            return True
 
     @classmethod
     def editProject(cls,user_id):
@@ -107,22 +157,48 @@ class Project:
                 conn.commit()
                 conn.close()
                 break
+
     @classmethod
-    def isProjectExisted(cls,user_id,project_id):
+    def searchForProjectByDate(cls,user_id):
+        os.system('clear')
         try:
             conn = sqlite3.connect('crowd_funding.db')
         except Exception as ex:
             print(ex)
         else:
+            while True:
+                # dd-mm-yyyy
+                start_date = input("Please Enter Project Start Date: ")
+                if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$" , start_date)):
+                    break
+                else:
+                    print("Project Start Format is incorrect")
+
+            while True:
+                end_date = input("Please Enter Project End Date: ")
+                if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$" , end_date)):
+                    break
+                else:
+                    print("Project End Format is incorrect")
+
             cur = conn.cursor()
-            cur.execute(f"SELECT * from projects where id = '{project_id}' and user_id = {user_id}")
-            project = cur.fetchone()
+            cur.execute(f"SELECT * from projects where user_id = '{user_id}' and start_date = '{start_date}' and end_date = '{end_date}'")
+            projects = cur.fetchall()
+            for project in projects:
+                id = project[0]
+                title = project[2]
+                details = project[3]
+                total_target = project[4]
+                start_date = project[5]
+                end_date = project[6]
+                print(f"ID : {id}")
+                print(f"Title : {title}")
+                print(f"Details : {details}")
+                print(f"Total Target : {total_target}")
+                print(f"Start Date : {start_date}")
+                print(f"End Date : {end_date}")
+                print("-----------------------------------------")
             conn.close()
-            if project:
-                return project
-            return False
-
-
     @classmethod
     def listProjects(cls,user_id):
         os.system('clear')
@@ -150,57 +226,21 @@ class Project:
                 print("-----------------------------------------")
             conn.close()
 
-
-
     @classmethod
-    def createProject(cls , user_id):
-        os.system('clear')
+    def isProjectExisted(cls,user_id,project_id):
         try:
             conn = sqlite3.connect('crowd_funding.db')
         except Exception as ex:
             print(ex)
         else:
-            while True:
-                title = input("Please Enter Project Title: ")
-                if bool(re.fullmatch("^[a-zA-Z]+[a-zA-Z0-9]*$", title)):
-                    break
-                else:
-                    print("Project Title Format is incorrect")
-
-            while True:
-                details = input("Please Enter Project Details: ")
-                if bool(re.fullmatch("^[a-zA-Z]+[a-zA-Z0-9]*$", details)):
-                    break
-                else:
-                    print("Project Details Format is incorrect")
-
-            while True:
-                total_target = input("Please Enter Project Total Target: ")
-                if total_target.isnumeric():
-                    break
-                else:
-                    print("Project Total Target Format is incorrect")
-
-            while True:
-                # dd-mm-yyyy
-                start_date = input("Please Enter Project Start Date: ")
-                if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$" , start_date)):
-                    break
-                else:
-                    print("Project Start Format is incorrect")
-
-            while True:
-                end_date = input("Please Enter Project End Date: ")
-                if bool(re.match("^([1-9] |1[0-9]| 2[0-9]|3[0-1])(.|-)([1-9] |1[0-2])(.|-|)20[0-9][0-9]$" , end_date)):
-                    break
-                else:
-                    print("Project End Format is incorrect")
-
-            conn.execute(f"INSERT INTO projects (user_id,title,details,total_target,start_date,end_date) \
-                    VALUES ({user_id}, '{title}' , '{details}', {total_target} , '{start_date}' , '{end_date}')")
-            conn.commit()
+            cur = conn.cursor()
+            cur.execute(f"SELECT * from projects where id = '{project_id}' and user_id = {user_id}")
+            project = cur.fetchone()
             conn.close()
-            return True
+            if project:
+                return project
+            return False
+
 
 
 
